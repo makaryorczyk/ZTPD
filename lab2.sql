@@ -5,21 +5,19 @@ CREATE table MOVIES_COPY as select * from ZTPD.MOVIES;
 
 -- Ex. 2
 
-select *
-from ZTPD.MOVIES
-    FETCH FIRST 5 ROWS ONLY;
+select * from MOVIES_COPY FETCH FIRST 5 ROWS ONLY;
 
 -- Ex. 3
 
-SELECT id, title from ZTPD.MOVIES WHERE cover is NULL;
+SELECT id, title from MOVIES_COPY WHERE cover is NULL;
 
 -- Ex. 4
 
-SELECT id, title, lengthb(cover) as filesize from ZTPD.MOVIES WHERE cover is NOT NULL;
+SELECT id, title, lengthb(cover) as filesize from MOVIES_COPY WHERE cover is NOT NULL;
 
 -- Ex. 5
 
-SELECT id, title, lengthb(cover) as filesize from ZTPD.MOVIES WHERE cover is NULL;
+SELECT id, title, lengthb(cover) as filesize from MOVIES_COPY WHERE cover is NULL;
 
 -- Ex. 6
 
@@ -33,19 +31,23 @@ where id = 66;
 
 -- Ex. 8
 
-SELECT id, title, lengthb(cover) as filesize from ZTPD.MOVIES WHERE id=65 OR id=66;
+SELECT id, title, lengthb(cover) as filesize from MOVIES_COPY WHERE id=65 OR id=66;
 
 -- Ex. 9
--- TODO
 
 DECLARE
     movies BLOB;
     okladka BFILE := BFILENAME('TPD_DIR', 'escape.jpg');
 BEGIN
-
-
+    SELECT COVER into movies
+    from MOVIES_COPY
+    where id = 66
+        for update;
+    DBMS_LOB.fileopen(okladka, DBMS_LOB.file_readonly);
+    DBMS_LOB.LOADFROMFILE(movies, okladka, DBMS_LOB.GETLENGTH(okladka));
+    DBMS_LOB.FILECLOSE(okladka);
+    COMMIT;
 END;
--- TODO
 
 -- Ex. 10
 
@@ -70,9 +72,7 @@ insert into TEMP_COVERS values (65, BFILENAME('TPD_DIR', 'eagles.jpg'), 'image/j
 
 -- Ex. 12
 
--- TODO verify
 select movie_id, image as filesize from TEMP_COVERS;
--- TODO verify
 
 -- Ex. 13
 
@@ -80,30 +80,26 @@ DECLARE
     mime varchar2(50);
     okladka BFILE;
     bblob BLOB;
-
 BEGIN
     SELECT image, mime_time
     into okladka, mime
     from TEMP_COVERS
-    where movie_id = 65;
-
+    where movie_id=65;
     DBMS_LOB.createtemporary(bblob, TRUE);
     DBMS_LOB.fileopen(okladka, DBMS_LOB.file_readonly);
-    DBMS_LOB.loadfromfile(blobb, okladka, DBMS_LOB.getlength(okladka));
+    DBMS_LOB.loadfromfile(bblob, okladka, DBMS_LOB.getlength(okladka));
     DBMS_LOB.fileclose(okladka);
-
-    UPDATE MOVIES_CP
+    UPDATE MOVIES_COPY
     SET cover = bblob,
         MIME_TYPE = mime
     WHERE id = 65;
-
     DBMS_LOB.freetemporary(bblob);
     COMMIT;
 end;
 
 -- Ex. 14
 
-SELECT id, title, lengthb(cover) as filesize from ZTPD.MOVIES WHERE id=65 OR id=66;
+SELECT id, title, lengthb(cover) as filesize from MOVIES_COPY WHERE id=65 OR id=66;
 
 -- Ex. 15
 

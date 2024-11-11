@@ -1,4 +1,4 @@
--- Lab  - Duze obiekty tekstowe
+-- Lab 3 - Duze obiekty tekstowe
 
 -- Zad 1.
 
@@ -10,15 +10,15 @@ CREATE TABLE DOKUMENTY (
 -- Zad 2.
 
 DECLARE
-    v_document CLOB;
+    doc CLOB;
 Begin
-    DBMS_LOB.createTemporary(v_document, TRUE);
+    DBMS_LOB.createTemporary(doc, TRUE);
     FOR i in 1..10000 LOOP
-        v_document := v_document || 'Oto tekst ';
-    END LOOP;
-    INSERT INTO DOKUMENTY VALUES (1, v_document);
+            doc := doc || 'Oto tekst. ';
+        END LOOP;
+    INSERT INTO DOKUMENTY VALUES (1, doc);
     COMMIT;
-    DBMS_LOB.freeTemporary(v_document);
+    DBMS_LOB.freeTemporary(doc);
 END;
 
 -- Zad 3.
@@ -101,6 +101,7 @@ BEGIN
 end;
 
 -- Zad 13.
+DROP TABLE BIOGRAPHIES;
 CREATE table BIOGRAPHIES as select * from ZTPD.BIOGRAPHIES;
 
 DECLARE
